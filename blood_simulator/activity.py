@@ -16,6 +16,12 @@ class Activity:
 	def __init__(self):
 		#To hold all inputs
 		self.inputs = []
+		#Array representing blood sugar level at any given minute in a day
+		self.blood_sugar_per_minute = [80] * (config.minutes_in_hour * config.hours_in_day)
+		#Array representing glyceration level at any given minute in a day 
+		self.glyceration_level_per_minute = [config.starting_glycation_level] * (config.minutes_in_hour * config.hours_in_day)
+		#Array erpresenting number of activities at any given minute in a day
+		self.change_per_minute = [[] for _ in range(config.minutes_in_hour * config.hours_in_day)]
 
 	def add_activity(self,activity):
 		new_activity = {
@@ -39,3 +45,45 @@ class Activity:
 			while start_time <= end_time and start_time < 1440 and end_time < 1440 :
 				self.change_per_minute[start_time].append(impact_per_minute)
 				start_time += 1
+
+	"""Given an array representing time of day, fill it with blood sugar level per minute"""
+	def calculate_bs_level(self):
+		current_bs_level = config.normal_blood_sugar_level
+
+		for minute, changes in enumerate(self.change_per_minute):
+			#Since we need to know if there were any changes, we can't rely on seeing if sum of changes isn't 0 - instead check size
+			if len(changes):
+				for change in changes:
+					current_bs_level += change
+				self.blood_sugar_per_minute[minute] = current_bs_level
+			#There were no activities at this minute, so normalize blood sugar level 
+			else:
+				#Corner case where blood sugar level is between 79-81
+				if abs(config.normal_blood_sugar_level - current_bs_level) < 1:
+					self.blood_sugar_per_minute[minute] = config.normal_blood_sugar_level
+				#Blood sugar is over, decrement
+				elif current_bs_level > config.normal_blood_sugar_level:
+					current_bs_level -= config.normalize_rate
+					self.blood_sugar_per_minute[minute] = current_bs_level
+				elif current_bs_level < config.normal_blood_sugar_level:
+					current_bs_level += config.normalize_rate
+					self.blood_sugar_per_minute[minute] = current_bs_level
+
+	"""Given an array representing time of day, fill it with glyceration level per minute"""
+	def calculate_glycation_level(self):
+		current_glycation_level = config.starting_glycation_level
+		for minute, level in enumerate(self.blood_sugar_per_minute):
+			# For every minute your blood sugar stays above the impact level, increment “glycation” by 1
+			if level > config.glycation_impact_level:
+				current_glycation_level += 1
+			self.glyceration_level_per_minute[minute] = current_glycation_level
+
+	"""Get the time series of blood sugar"""
+	def get_blood_sugar_per_minute(self):
+		return self.blood_sugar_per_minute
+
+	"""Get the time series of glyceration level"""
+	def get_glyceration_level_per_minute(self):
+		return self.glyceration_level_per_minute
+
+		
