@@ -1,4 +1,11 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 import os,sys,csv
+
+#Import the activity class
+sys.path.append(os.path.abspath("activity.py"))
+import activity
 
 class BloodSimulator:
 
