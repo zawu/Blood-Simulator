@@ -23,6 +23,7 @@ class Activity:
 		#Array erpresenting number of activities at any given minute in a day
 		self.change_per_minute = [[] for _ in range(config.minutes_in_hour * config.hours_in_day)]
 
+	"""Add activity to list, re/calculate arrays"""
 	def add_activity(self,activity):
 		new_activity = {
 			'id':len(self.inputs) + 1,
@@ -31,8 +32,10 @@ class Activity:
 			'time':activity['time'],
 			'type':activity['type']
 		}
+		self.inputs.append(dict(new_activity))
+		self.process_activities(self.inputs)
 
-	"""Given a list of activities, figure out the time frame of impact first"""
+	"""Given a list of activity objects, calculate the impact on bloodsugar """
 	def process_activities(self,activity_list):
 		#For each activity in activity list, process 
 		for activity in activity_list:
@@ -45,6 +48,10 @@ class Activity:
 			while start_time <= end_time and start_time < 1440 and end_time < 1440 :
 				self.change_per_minute[start_time].append(impact_per_minute)
 				start_time += 1
+
+		#Recalculate the two arrays every time there is a activity 
+		self.calculate_bs_level()
+		self.calculate_glycation_level()
 
 	"""Given an array representing time of day, fill it with blood sugar level per minute"""
 	def calculate_bs_level(self):
@@ -86,4 +93,3 @@ class Activity:
 	def get_glyceration_level_per_minute(self):
 		return self.glyceration_level_per_minute
 
-		
