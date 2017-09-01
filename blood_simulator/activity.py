@@ -35,6 +35,13 @@ class Activity:
 		self.inputs.append(dict(new_activity))
 		self.process_activities(self.inputs)
 
+	"""Recalculate arrays after the removal of activity"""
+	"""TODO - Use this for removing / repainting the graph after adding activities to the pane"""
+	def remove_activity(self,activity):
+		self.inputs.remove(activity)
+		self.process_activities(self.inputs)
+
+
 	"""Given a list of activity objects, calculate the impact on bloodsugar """
 	def process_activities(self,activity_list):
 		#For each activity in activity list, process 

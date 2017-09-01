@@ -49,9 +49,9 @@ class BloodSimulator:
 		fig = Figure(figsize=(7,7))
 		a = fig.add_subplot(1,1,1)
 
-		a.plot(x,blood_sugar)
+		a.plot(x,blood_sugar,"r-")
 		a2 = a.twinx()
-		a2.plot(x,glyceration_level)
+		a2.plot(x,glyceration_level,"b-")
 
 		a.set_title ("Blood Sugar Plot", fontsize=16)
 		a.set_ylabel("Blood Sugar", fontsize=14)
@@ -60,6 +60,8 @@ class BloodSimulator:
 		
 		canvas = FigureCanvasTkAgg(fig, master=self.mainframe)
 		canvas.get_tk_widget().grid(row=5,column=1,sticky="nesw",columnspan=4)
+		toolbar = NavigationToolbar2TkAgg(canvas, self.mainframe)
+		toolbar.grid(row=6,column=1,columnspan=4)
 		canvas.draw()
 
 	def update_exercise(self,value):
@@ -67,29 +69,53 @@ class BloodSimulator:
 
 	def add_exercise(self):
 		time = self.exercise_time_input.get()
-		activity = {
-			'name':self.exercise_dict[self.exercise]['name'],
-			'index':self.exercise_dict[self.exercise]['index'],
-			'time':time,
-			'type':'exercise'
-		}
-		self.activity_class.add_activity(activity)
-		self.plot(self.activity_class.blood_sugar_per_minute,self.activity_class.glyceration_level_per_minute)
+		invalid_exercise_time_label = None
+		if len(time) != 4 or int(time) / 100 >= 24 or int(time) % 100 >=60 :
+			tkvar = StringVar(self.mainframe)
+			invalid_exercise_time_label = Label(self.mainframe, text="Please use HHMM Military Format", fg="red")
+			invalid_exercise_time_label.grid(row=0,column=4)
+		else:
+			try:
+				if type(invalid_exercise_time_label) is not NoneType:
+					invalid_exercise_time_label.grid_forget()
+				activity = {
+					'name':self.exercise_dict[self.exercise]['name'],
+					'index':self.exercise_dict[self.exercise]['index'],
+					'time':time,
+					'type':'exercise'
+				}
+				self.activity_class.add_activity(activity)
+				self.plot(self.activity_class.blood_sugar_per_minute,self.activity_class.glyceration_level_per_minute)
+			except:
+				invalid_exercise_time_label = Label(self.mainframe, text="Please choose an exercise", fg="red")
+				invalid_exercise_time_label.grid(row=0,column=4)
 
 	def update_food(self,value):
 		self.food = value
 
 	def add_food(self):
 		time = self.food_time_input.get()
-		activity = {
-			'name':self.food_dict[self.food]['name'],
-			'index':self.food_dict[self.food]['index'],
-			'time':time,
-			'type':'food'
-		}
-		self.activity_class.add_activity(activity)
-		self.plot(self.activity_class.blood_sugar_per_minute,self.activity_class.glyceration_level_per_minute)
-
+		invalid_food_time_label = None
+		if len(time) != 4 or int(time) / 100 >= 24 or int(time) % 100 >=60 :
+			# print "Time Invalid"
+			tkvar = StringVar(self.mainframe)
+			invalid_food_time_label = Label(self.mainframe, text="Please use HHMM Military Format", fg="red")
+			invalid_food_time_label.grid(row=0,column=3)
+		else:
+			try:
+				if type(invalid_food_time_label) is not NoneType:
+					invalid_food_time_label.grid_forget()
+				activity = {
+					'name':self.food_dict[self.food]['name'],
+					'index':self.food_dict[self.food]['index'],
+					'time':time,
+					'type':'food'
+				}
+				self.activity_class.add_activity(activity)
+				self.plot(self.activity_class.blood_sugar_per_minute,self.activity_class.glyceration_level_per_minute)
+			except:
+				invalid_food_time_label = Label(self.mainframe, text="Please choose a food", fg="red")
+				invalid_food_time_label.grid(row=0,column=3)
 	def get_activity_dict(self,csv_file):
 	    #Read in csv file 
 	    with open(csv_file) as f:
